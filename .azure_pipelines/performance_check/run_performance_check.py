@@ -20,6 +20,7 @@ from optimum.onnxruntime import ORTOptimizer, ORTQuantizer
 from optimum.onnxruntime.configuration import AutoOptimizationConfig, AutoQuantizationConfig
 from tabulate import tabulate
 
+from olive.data.template import huggingface_data_config_template
 from olive.workflows import run as olive_run
 
 MODEL_NAME_MAP = {
@@ -186,6 +187,7 @@ def run_perf_comparison(cur_dir, model_name, device, model_root_path, test_num):
             with open(config_json_path, "r") as fin:
                 olive_config = json.load(fin)
                 user_script_path = str(cur_dir / "user_scripts" / f"{model_name}.py")
+                hf_model_config = MODEL_NAME_TO_CONFIG_MAP[model_name]
                 if optimized_model == "onnx":
                     olive_config["input_model"]["config"]["model_path"] = str(
                         Path(model_root_path / optimized_model / "model.onnx")
@@ -200,7 +202,7 @@ def run_perf_comparison(cur_dir, model_name, device, model_root_path, test_num):
                     )
                 elif optimized_model == "hf_pytorch":
                     olive_config["input_model"]["type"] = "PyTorchModel"
-                    hf_config = {"hf_config": MODEL_NAME_TO_CONFIG_MAP[model_name]}
+                    hf_config = {"hf_config": hf_model_config}
                     olive_config["input_model"]["config"] = hf_config
                 elif optimized_model == "pytorch_compile":
                     olive_config["input_model"]["type"] = "PyTorchModel"
@@ -217,6 +219,12 @@ def run_perf_comparison(cur_dir, model_name, device, model_root_path, test_num):
                 )
                 olive_config["evaluators"]["common_evaluator"]["metrics"].append(ACC_METRIC)
                 olive_config["evaluators"]["common_evaluator"]["metrics"].append(LAT_METRIC)
+                olive_config["evaluators"]["common_evaluator"]["metrics"][0][
+                    "data_config"
+                ] = huggingface_data_config_template(**hf_model_config)
+                olive_config["evaluators"]["common_evaluator"]["metrics"][1][
+                    "data_config"
+                ] = huggingface_data_config_template(**hf_model_config)
 
             run_with_config(optimized_model, olive_config, metric_res)
 
