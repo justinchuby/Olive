@@ -10,7 +10,7 @@ def check_output(footprints):
     """Check if the search output is valid."""
     assert footprints, "footprints is empty. The search must have failed for all accelerator specs."
     for footprint in footprints.values():
-        print(f"footprint: {footprint}")
+        print(f"footprint: {footprint.to_json()}")
         assert footprint.nodes
         for v in footprint.nodes.values():
             assert all([metric_result.value > 0 for metric_result in v.metrics.value.values()])
