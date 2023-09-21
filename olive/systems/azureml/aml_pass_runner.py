@@ -60,7 +60,13 @@ def create_pass(pass_config, pass_args):
 def main(raw_args=None):
     input_model_config, pipeline_output, extra_args = get_common_args(raw_args)
     pass_config_arg, extra_args = parse_pass_config_arg(extra_args)
+    
+    
+    import onnxruntime
 
+    available_providers = onnxruntime.get_available_providers()
+    print(f"available_providers: {available_providers}")
+    
     # pass config
     with open(pass_config_arg.pass_config) as f:
         pass_config = json.load(f)
