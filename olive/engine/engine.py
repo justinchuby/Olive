@@ -367,6 +367,7 @@ class Engine:
         accelerator_spec: AcceleratorSpec,
     ):
         # generate search space and initialize the passes for each hardware accelerator
+        print(f"Run Olive on {accelerator_spec}")
         self.setup_passes(accelerator_spec)
 
         # hash the input model

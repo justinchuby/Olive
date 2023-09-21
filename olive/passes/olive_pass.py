@@ -68,7 +68,7 @@ class Pass(ABC):
         """
         assert accelerator_spec is not None, "Please specify the accelerator spec for the pass."
         assert config is not None, "Please specify the configuration for the pass."
-
+        print(f"pass {self.__class__.__name__} accelerator_spec: {accelerator_spec}")
         config_class, default_config = self.get_config_class(accelerator_spec, disable_search)
 
         self.accelerator_spec = accelerator_spec

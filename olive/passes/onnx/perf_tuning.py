@@ -248,6 +248,7 @@ def get_benchmark(model, data_root, latency_metric, config, test_params=None):
         test_params["_io_bind"] = io_bind
     evaluator = OliveEvaluatorFactory.create_evaluator_for_model(model)
     joint_key = joint_metric_key(latency_metric.name, latency_metric.sub_types[0].name)
+    print(f"provider list: {config.providers_list}")
     test_result["latency_ms"] = evaluator.evaluate(
         model, data_root, [latency_metric], config.device, config.providers_list
     )[joint_key].value
@@ -361,4 +362,5 @@ class OrtPerfTuning(Pass):
         # TODO: decide on whether to ignore the output_model_path
         # if we want to ignore it, we can just return the model
         # otherwise save or symlink the original model to the output_model_path
+        print(f"config: {config}")
         return tune_onnx_model(model, data_root, config)
