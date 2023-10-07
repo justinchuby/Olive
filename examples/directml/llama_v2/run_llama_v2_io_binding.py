@@ -85,7 +85,7 @@ def run_llama_v2_io_binding(
         elif inputs_meta.name == "cache.0.key":
             cache_shape = inputs_meta.shape
 
-    n_layers = 32
+    n_layers = 2
     hidden_size = x_shape[2]
     n_heads = cache_shape[3]
     attn_mask_shape[1] = max_seq_len

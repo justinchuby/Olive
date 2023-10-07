@@ -72,7 +72,7 @@ def update_embeddings_data_loader(data_dir, batch_size, *args, **kwargs):
 
 
 def get_or_create_decoder_model():
-    num_layers = 32
+    num_layers = 2
     num_heads = 32
     vocab_size = 32000
     hidden_size = 4096
@@ -100,7 +100,7 @@ def get_or_create_decoder_model():
         # We don't use rope.freqs
         state_dict = torch.load(weights_path)
         del state_dict["rope.freqs"]
-        config.decoder_model.load_state_dict(state_dict)
+        config.decoder_model.load_state_dict(state_dict, strict=False)
 
     return config.decoder_model
 
@@ -116,7 +116,7 @@ def decoder_inputs(model):
     seq_len = 10
     hidden_size = 4096
     max_seq_len = 2048
-    num_layers = 32
+    num_layers = 2
     num_heads = 32
     head_size = hidden_size // num_heads
 
@@ -148,7 +148,7 @@ def decoder_with_past_inputs(model):
     batch_size = 1
     hidden_size = 4096
     max_seq_len = 2048
-    num_layers = 32
+    num_layers = 2
     num_heads = 32
     head_size = hidden_size // num_heads
     return {
@@ -175,7 +175,7 @@ def merged_decoders_inputs(model):
     batch_size = 1
     hidden_size = 4096
     max_seq_len = 2048
-    num_layers = 32
+    num_layers = 2
     num_heads = 32
     head_size = hidden_size // num_heads
     seq_len = 10
