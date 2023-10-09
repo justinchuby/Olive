@@ -85,9 +85,9 @@ def run_llama_v2_io_binding(
         elif inputs_meta.name == "cache.0.key":
             cache_shape = inputs_meta.shape
 
-    n_layers = 2
+    n_layers = 32
     hidden_size = x_shape[2]
-    n_heads = cache_shape[3]
+    n_heads = cache_shape[1]
     attn_mask_shape[1] = max_seq_len
 
     binding_device = "dml"
@@ -98,9 +98,9 @@ def run_llama_v2_io_binding(
     tokens = onnxruntime.OrtValue.ortvalue_from_numpy(np.asarray(tokens, dtype=np.int64), binding_device)
 
     # Create the attention mask.
-    attn_mask = -10000.0 * np.triu(np.ones(attn_mask_shape), k=1).astype(data_type)
+    attn_mask = np.triu(np.ones(attn_mask_shape), k=1).astype(np.int32)
     attn_mask = onnxruntime.OrtValue.ortvalue_from_numpy(attn_mask, binding_device)
-    attn_mask_out = onnxruntime.OrtValue.ortvalue_from_shape_and_type(attn_mask_shape, data_type, binding_device)
+    attn_mask_out = onnxruntime.OrtValue.ortvalue_from_shape_and_type(attn_mask_shape, np.int32, binding_device)
 
     # Create the K and V caches.
     head_dim = int(hidden_size / n_heads)
@@ -125,7 +125,7 @@ def run_llama_v2_io_binding(
     llm_io_binding = llm_session.io_binding()
     llm_io_binding.bind_ortvalue_output("logits", logits)
 
-    cache_shape = (1, 1, max_seq_len, n_heads, head_dim)
+    cache_shape = (1, n_heads, max_seq_len, head_dim)
     initial_cache = np.zeros(cache_shape, dtype=data_type)
     k_caches = []
     v_caches = []

@@ -107,7 +107,7 @@ def run_llama_v2_io_binding(
 
     n_layers = 32
     hidden_size = x_shape[2]
-    n_heads = cache_shape[3]
+    n_heads = cache_shape[1]
 
     binding_device = "dml"
 
@@ -166,16 +166,16 @@ def run_llama_v2_io_binding(
                 (1, padded_seq_len, 1, 64), data_type, binding_device
             )
 
-            attn_mask = -10000.0 * np.triu(np.ones((1, padded_seq_len, padded_seq_len)), k=1).astype(data_type)
+            attn_mask = np.triu(np.ones((1, padded_seq_len, padded_seq_len)), k=1).astype(np.int32)
             attn_mask = onnxruntime.OrtValue.ortvalue_from_numpy(attn_mask, binding_device)
             attn_mask_out = onnxruntime.OrtValue.ortvalue_from_shape_and_type(
-                (1, padded_seq_len, padded_seq_len), data_type, binding_device
+                (1, padded_seq_len, padded_seq_len), np.int32, binding_device
             )
 
             for layer_idx in range(n_layers):
                 if idx == 0:
-                    k_caches[layer_idx] = np.zeros((1, 1, padded_seq_len, n_heads, head_dim), dtype=data_type)
-                    v_caches[layer_idx] = np.zeros((1, 1, padded_seq_len, n_heads, head_dim), dtype=data_type)
+                    k_caches[layer_idx] = np.zeros((1, n_heads, padded_seq_len, head_dim), dtype=data_type)
+                    v_caches[layer_idx] = np.zeros((1, n_heads, padded_seq_len, head_dim), dtype=data_type)
                 else:
                     k_caches[layer_idx] = np.pad(
                         k_caches[layer_idx].numpy(), ((0, 0), (0, 0), (padding, 0), (0, 0), (0, 0))
