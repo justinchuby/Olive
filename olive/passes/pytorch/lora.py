@@ -591,14 +591,19 @@ class QLoRA(LoRABase):
         config.training_args = config.training_args or HFTrainingArguments()
 
         # get models and tokenizer
-        new_model, pytorch_model, tokenizer = self.get_model_tokenizer(model, config)
+        new_model, pytorch_model, tokenizer, quantized_modules = self.get_model_tokenizer(model, config)
 
-        # train and return new model
-        return self.train_and_save_new_model(pytorch_model, tokenizer, config, data_root, new_model, output_model_path)
+        # train and get new model
+        output_model = self.train_and_save_new_model(
+            pytorch_model, tokenizer, config, data_root, new_model, output_model_path
+        )
+        # add quantized_modules attributes
+        output_model.model_attributes["quantized_modules"] = quantized_modules
+        return output_model
 
     def get_model_tokenizer(
         self, model: PyTorchModel, config: ConfigBase
-    ) -> Tuple[PyTorchModel, PreTrainedModel, PreTrainedTokenizer]:
+    ) -> Tuple[PyTorchModel, PreTrainedModel, PreTrainedTokenizer, List[str]]:
         """Get the Olive model, PyTorch model and tokenizer for QLoRA fine-tuning."""
         # don't want the original loaded model
         # also frees gpu memory if original model is on gpu
@@ -643,7 +648,7 @@ class QLoRA(LoRABase):
         target_modules = self.find_all_linear_names(pytorch_model)
         pytorch_model = self.enable_lora(pytorch_model, tokenizer, new_model.hf_config.task, config, target_modules)
 
-        return new_model, pytorch_model, tokenizer
+        return new_model, pytorch_model, tokenizer, target_modules
 
     @staticmethod
     def find_all_linear_names(model: torch.nn.Module) -> List[str]:
